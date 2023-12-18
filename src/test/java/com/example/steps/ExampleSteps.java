@@ -1,9 +1,9 @@
 package com.example.steps;
 
 import com.example.context.Book;
+import com.example.context.PersonalInfo;
 import com.example.context.TestContext;
-import com.example.pages.LoginPage;
-import com.example.pages.MainPage;
+import com.example.pages.*;
 import com.example.utils.ConfigurationReader;
 import com.example.utils.DriverFactory;
 import io.cucumber.java.*;
@@ -62,6 +62,7 @@ public class ExampleSteps {
         LoginPage lp = new LoginPage(context);
         lp.usernameInput.sendKeys(ConfigurationReader.get("standard_login"));
         lp.passwordInput.sendKeys(ConfigurationReader.get("password"));
+        lp.loginButton.click();
     }
     @When("clicks login button")
     public void clicks_login_button() {
@@ -127,5 +128,44 @@ public class ExampleSteps {
         logs.append(String.format("actualText: %s", actualText));
         logs.append(String.format("expectedText: %s", expectedErrorMessage));
         assertTrue(actualText.contains(expectedErrorMessage));
+    }
+
+    @When("user goes to the cart")
+    public void userGoesToTheCart() {
+        MainPage mainPage = new MainPage(context);
+        mainPage.shoppingCartLink.click();
+
+    }
+
+    @When("makes checkout")
+    public void makesCheckout() {
+        CartPage cartPage = new CartPage(context);
+        cartPage.checkoutButton.click();
+    }
+
+    @When("enters personal info:")
+    public void entersPersonalInfo( List<PersonalInfo> personalInfos) {
+        CheckoutPage checkoutPage = new CheckoutPage(context);
+        checkoutPage.
+    }
+    @DataTableType
+    public PersonalInfo personalInfoTransformer(Map<String, String> row) {
+
+        return new PersonalInfo(
+                row.get("First name"),
+                row.get("Last name"),
+                Integer.parseInt(row.get("ZIP"))
+        );
+    }
+    @Then("total is {double}")
+    public void totalIs(int arg0, int arg1) {
+    }
+
+    @When("user clicks Finish button")
+    public void userClicksFinishButton() {
+    }
+
+    @Then("the complete page has text {string}")
+    public void theCompletePageHasText(String arg0) {
     }
 }
