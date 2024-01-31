@@ -1,28 +1,24 @@
 package com.example.steps;
 
-import com.example.context.Book;
-import com.example.context.PersonalInfo;
 import com.example.context.TestContext;
-import com.example.pages.*;
+import com.example.pages.MainPage;
 import com.example.utils.ConfigurationReader;
 import com.example.utils.DriverFactory;
 import io.cucumber.java.*;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.qameta.allure.Allure;
-import org.apache.commons.logging.Log;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExampleSteps {
     TestContext context;
@@ -52,120 +48,54 @@ public class ExampleSteps {
         logs.append(context.driver.getCurrentUrl());
     }
 
-    @Given("user enter login page")
-    public void user_enter_login_page() {
-        logs.append("Entered login page");
+    @Given("the user is on the ToDo app homepage")
+    public void userOnMainPage() {
+        logs.append("Entered main page");
     }
 
-    @When("user enters valid credentials")
-    public void user_enters_valid_credentials() {
-        LoginPage lp = new LoginPage(context);
-        lp.usernameInput.sendKeys(ConfigurationReader.get("standard_login"));
-        lp.passwordInput.sendKeys(ConfigurationReader.get("password"));
-        lp.loginButton.click();
-    }
-    @When("clicks login button")
-    public void clicks_login_button() {
-        LoginPage lp = new LoginPage(context);
-        lp.loginButton.click();
-    }
-
-    @When("user adds first product to the cart")
-    public void user_adds_first_product_to_the_cart() {
+    @When("the user adds a new task with title {string}")
+    public void addNewTask(String str1) {
         MainPage mp = new MainPage(context);
-        mp.addToCartButtons.get(0).click();
+        mp.placeEnter.sendKeys(str1);
+        mp.buttonPlus.click();
+    }
+    @Then("the task {string} should appear in the task list")
+    public void taskAppearsInTaskList(String str1) {
+        assertEquals(str1, new MainPage(context).textNewRecord.getText());
     }
 
-    @Then("amount of products in the cart is {int}")
-    public void amount_of_products_in_the_cart_is(Integer amount) {
-        assertEquals(Integer.parseInt(new MainPage(context).shoppingCartLink.getText()), amount);
-    }
-
-    @Then("main page opens")
-    public void main_page_opens() {
+    @When("the user deletes a task")
+    public void deleteTask() {
         MainPage mp = new MainPage(context);
-        assertTrue(mp.firstDescriptionContainer.isDisplayed());
+        mp.deleteRecord.click();
     }
-    @Then("it have text in footer {string}")
-    public void it_have_text_in_footer(String expectedText) {
+    @Then("the task list should not contain the deleted task")
+    public void listNotContainsDeleted() {
         MainPage mp = new MainPage(context);
-        assertTrue(mp.footer.getText().contains(expectedText));
-    }
-
-    @DataTableType
-    public Book bookEntryTransformer(Map<String, String> row) {
-
-        return new Book(
-                row.get("title"),
-                row.get("author"),
-                Integer.parseInt(row.get("yearOfPublishing"))
-        );
-    }
-
-    @Given("the following books")
-    public void theFollowingBooks(List<Book> books) {
-
-        for(Book book: books) {
-            System.out.printf(
-                    "'%s', published in %d, was written by %s\n",
-                    book.title,
-                    book.yearOfPublishing,
-                    book.author
-            );
+        assertEquals("No To Do Available Yet !!", mp.allertNoToDo.getText());
+        System.out.println("Запись No To Do проверена");
+            try {
+                mp.recordAmi.isDisplayed();
+            } catch (NoSuchElementException e) {
+                System.out.println("Запись удалена. Она не найдена");
+            }
         }
-    }
 
-    @When("user enters login {word} and password {string}")
-    public void userEntersLoginAndPassword(String login, String password) {
-        LoginPage lp = new LoginPage(context);
-        lp.usernameInput.sendKeys(login);
-        lp.passwordInput.sendKeys(password);
-    }
-
-    @Then("error message contains text {string}")
-    public void errorMessageContainsText(String expectedErrorMessage) {
-        String actualText = new LoginPage(context).loginMessageContainer.getText();
-        logs.append(String.format("actualText: %s", actualText));
-        logs.append(String.format("expectedText: %s", expectedErrorMessage));
-        assertTrue(actualText.contains(expectedErrorMessage));
-    }
-
-    @When("user goes to the cart")
-    public void userGoesToTheCart() {
-        MainPage mainPage = new MainPage(context);
-        mainPage.shoppingCartLink.click();
+    @When("the user edits a task {string} to {string}")
+    public void theUserEditsATaskTo(String str4, String str5) {
+        MainPage mp = new MainPage(context);
+        mp.buttonEditRecordAmi.click();
+        mp.editRecord.click();
+        mp.editRecord.sendKeys(Keys.COMMAND+"a");
+        mp.editRecord.sendKeys(Keys.BACK_SPACE);
+        mp.editRecord.sendKeys(str5);
+        mp.editRecordConfirm.click();
 
     }
 
-    @When("makes checkout")
-    public void makesCheckout() {
-        CartPage cartPage = new CartPage(context);
-        cartPage.checkoutButton.click();
-    }
-
-    @When("enters personal info:")
-    public void entersPersonalInfo( List<PersonalInfo> personalInfos) {
-        CheckoutPage checkoutPage = new CheckoutPage(context);
-        checkoutPage.
-    }
-    @DataTableType
-    public PersonalInfo personalInfoTransformer(Map<String, String> row) {
-
-        return new PersonalInfo(
-                row.get("First name"),
-                row.get("Last name"),
-                Integer.parseInt(row.get("ZIP"))
-        );
-    }
-    @Then("total is {double}")
-    public void totalIs(int arg0, int arg1) {
-    }
-
-    @When("user clicks Finish button")
-    public void userClicksFinishButton() {
-    }
-
-    @Then("the complete page has text {string}")
-    public void theCompletePageHasText(String arg0) {
+    @Then("the task list should display {string}")
+    public void theTaskListShouldDisplay(String str6) {
+        assertEquals(str6, new MainPage(context).newEditedRecord.getText());
     }
 }
+
